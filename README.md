@@ -37,6 +37,7 @@
 | `GLADOS_COOKIES` | **是** | 账号列表，固定 JSON 数组，见[账号配置](#配置-glados_cookies) |
 | `PUSHDEER_SENDKEY` | 否 | PushDeer 推送，见[消息推送](#消息推送) |
 | `SERVERCHAN_SENDKEY` | 否 | Server酱 推送，见[消息推送](#消息推送) |
+| `XTUIS_TOKEN` | 否 | 虾推啥 推送，见[消息推送](#消息推送) |
 | `GLADOS_EXCHANGE_PLAN` | 否 | `plan100` / `plan200` / `plan500`，见[积分兑换](#积分兑换) |
 | `GLADOS_VERBOSE` | 否 | `true` / `1` / `yes` 输出详细日志 |
 
@@ -148,8 +149,9 @@ Python / Actions 和扩展可以同时保留：Actions 负责无人值守，扩�
 | --- | --- | --- |
 | PushDeer | `PUSHDEER_SENDKEY` | [pushdeer.com](https://www.pushdeer.com/product.html) 下载 App，在 App 内获取 pushkey |
 | Server酱 | `SERVERCHAN_SENDKEY` | [sct.ftqq.com](https://sct.ftqq.com/) 微信扫码登录，在页面获取 SendKey |
+| 虾推啥 | `XTUIS_TOKEN` | [xtuis.cn](https://www.xtuis.cn/) 微信关注「虾推啥」公众号后获取 token |
 
-两个可单独或同时配置（都发，任一成功即视为成功）；都不配则跳过推送，不影响签到。
+三个可单独或同时配置（都发，任一成功即视为成功）；都不配则跳过推送，不影响签到。
 
 ### 推送效果
 

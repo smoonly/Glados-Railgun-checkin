@@ -1088,6 +1088,7 @@ class Config:
 
     ENV_PUSH_KEY = "PUSHDEER_SENDKEY"
     ENV_SERVERCHAN_KEY = "SERVERCHAN_SENDKEY"
+    ENV_XTUIS_KEY = "XTUIS_TOKEN"
     ENV_COOKIES = "GLADOS_COOKIES"
     ENV_EXCHANGE_PLAN = "GLADOS_EXCHANGE_PLAN"
     ENV_VERBOSE = "GLADOS_VERBOSE"
@@ -1099,6 +1100,7 @@ class Config:
         self.env = env if env is not None else os.environ
         self.push_key = ""
         self.serverchan_key = ""
+        self.xtuis_key = ""
         self.accounts = Accounts()
         self.exchange_plan = self.DEFAULT_EXCHANGE_PLAN
         self.verbose = self.DEFAULT_VERBOSE
@@ -1125,7 +1127,7 @@ class Config:
         logger.info(f"{LogEmoji.INFO} 共加载了 {len(self.accounts)} 个账号用于签到。")
         for account in self.accounts:
             logger.info(f"{LogEmoji.INFO} {LogEmoji.COOKIE}[{account.label}] {LogEmoji.DOMAIN}[{account.origin or '待探测'}] UA={'自定义' if account.user_agent else '默认'}")
-        logger.info(f"{LogEmoji.INFO} 当前 {self.ENV_PUSH_KEY} {'已设置' if self.push_key else '未设置'}，" f"{self.ENV_SERVERCHAN_KEY} {'已设置' if self.serverchan_key else '未设置'}。")
+        logger.info(f"{LogEmoji.INFO} 当前 {self.ENV_PUSH_KEY} {'已设置' if self.push_key else '未设置'}，" f"{self.ENV_SERVERCHAN_KEY} {'已设置' if self.serverchan_key else '未设置'}，" f"{self.ENV_XTUIS_KEY} {'已设置' if self.xtuis_key else '未设置'}。")
         logger.info(f"{LogEmoji.INFO} 当前 {self.ENV_EXCHANGE_PLAN}: {self.exchange_plan}。")
         logger.info(f"{LogEmoji.INFO} 当前 {self.ENV_VERBOSE}: {self.verbose}。")
 
@@ -1133,7 +1135,7 @@ class Config:
         return (self.env.get(key) or "").strip()
 
     def _load_push_keys(self) -> None:
-        for key, env_name in (("push_key", self.ENV_PUSH_KEY), ("serverchan_key", self.ENV_SERVERCHAN_KEY)):
+        for key, env_name in (("push_key", self.ENV_PUSH_KEY), ("serverchan_key", self.ENV_SERVERCHAN_KEY), ("xtuis_key", self.ENV_XTUIS_KEY)):
             value = self._get(env_name)
             setattr(self, key, value)
             if not value:
@@ -1293,6 +1295,30 @@ class ServerChanBackend(PushBackend):
             return False
 
 
+class XtuisBackend(PushBackend):
+    """虾推啥 后端"""
+
+    name = "虾推啥"
+
+    API_URL = "https://wx.xtuis.cn/{token}.send"
+
+    def __init__(self, token: str):
+        self.token = token
+
+    def send(self, report: Report) -> bool:
+        try:
+            resp = requests.post(
+                self.API_URL.format(token=self.token),
+                data={"text": report.title, "desp": self._render(report)},
+                timeout=10,
+            )
+            resp.raise_for_status()
+            return True
+        except Exception as e:  # noqa: BLE001 - 推送失败不应影响主流程
+            logger.error(f"{LogEmoji.ERROR} [{self.name}] 推送失败: {e}")
+            return False
+
+
 class PushService:
     """聚合多个推送后端，向全部已配置的后端发送（都发）"""
 
@@ -1304,6 +1330,8 @@ class PushService:
             self.backends.append(PushDeerBackend(config.push_key))
         if config.serverchan_key:
             self.backends.append(ServerChanBackend(config.serverchan_key))
+        if config.xtuis_key:
+            self.backends.append(XtuisBackend(config.xtuis_key))
 
     def send(self, report: Report) -> bool:
         """向所有已配置后端发送，任一成功即视为成功"""
