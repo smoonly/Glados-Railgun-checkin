@@ -46,7 +46,7 @@
 
 4. 手机推送（非必须）
 
-- 添加1个`repository secret`，命名为`PUSHDEER_SENDKEY`，其值对应 PushDeer key: ([获取地址](https://www.pushdeer.com/product.html))。
+- 添加1个`repository secret`，命名为`XTUIS_TOKEN`，其值对应虾推啥的 token（微信关注虾推啥公众号后自动获取）: ([官网](https://www.xtuis.cn/))。
 
 ### **star**自己的仓库
 

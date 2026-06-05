@@ -5,7 +5,6 @@ import logging
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass, asdict
-from pypushdeer import PushDeer
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from logging_config import init_logger
@@ -96,7 +95,7 @@ def log_method(func):
 class Config:
     """应用配置"""
 
-    ENV_PUSH_KEY = "PUSHDEER_SENDKEY"
+    ENV_PUSH_KEY = "XTUIS_TOKEN"
     ENV_COOKIES = "GLADOS_COOKIES"
     ENV_EXCHANGE_PLAN = "GLADOS_EXCHANGE_PLAN"
     ENV_VERBOSE = "GLADOS_VERBOSE"
@@ -451,20 +450,24 @@ class CheckinResult:
 
 
 class PushService:
-    """推送服务"""
+    """推送服务 (虾推啥)"""
+
+    XTUIS_API_URL = "https://wx.xtuis.cn/{token}.send"
 
     def __init__(self, config: Config):
         self.config = config
 
     def send(self, title: str, content: str) -> bool:
-        """发送推送"""
+        """通过虾推啥发送微信推送"""
         if not self.config.push_key:
             logger.info(f"{LogEmoji.WARNING} 未设置推送密钥，跳过推送通知。")
             return False
 
         try:
-            pushdeer = PushDeer(pushkey=self.config.push_key)
-            pushdeer.send_text(title, desp=content)
+            url = self.XTUIS_API_URL.format(token=self.config.push_key)
+            payload = {"text": title, "desp": content}
+            resp = requests.post(url, data=payload, timeout=10)
+            resp.raise_for_status()
             logger.info(f"{LogEmoji.SUCCESS} 推送通知发送成功。")
             return True
         except Exception as e:
