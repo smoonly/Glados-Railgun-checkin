@@ -8,8 +8,8 @@ on:
       - 'README.md'
       - 'imgs/**'
   schedule:
-    # GitHub Actions cron 使用 UTC；北京时间 18:01 = UTC 10:01
-    - cron: '1 10 * * *'
+    # GitHub Actions cron 使用 UTC；北京时间 10:01 = UTC 02:01
+    - cron: '1 2 * * *'
 
 jobs:
   build:
